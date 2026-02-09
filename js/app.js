@@ -67,6 +67,7 @@ function showCard(i) {
     
     // Update front
     document.getElementById('word-en').textContent = v.english;
+    document.getElementById('word-phonetic').textContent = v.phonetic ? `/${v.phonetic}/` : '';
     document.getElementById('trans-es').textContent = v.spanish;
     document.getElementById('trans-pt').textContent = v.portuguese;
     document.getElementById('trans-cn').textContent = v.chinese;
