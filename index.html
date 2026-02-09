@@ -33,43 +33,45 @@
             
             <div class="flashcard" id="flashcard">
                 <div class="card-face card-front">
-                    <span class="category-tag" id="card-category">科技</span>
-                    <div class="word" id="card-front">点击开始学习</div>
-                    <div class="hint">点击显示翻译</div>
-                </div>
-                <div class="card-face card-back">
-                    <div class="translations" id="card-back">
-                        <div class="lang-row">
-                            <span class="lang-label">🇬🇧 EN:</span>
-                            <span class="lang-value" id="word-en"></span>
+                    <!-- 正面：英文主词 + 中西葡对照 -->
+                    <div class="word-main" id="word-main">点击开始学习</div>
+                    
+                    <div class="translations-preview" id="translations-preview">
+                        <div class="trans-row">
+                            <span class="lang-flag">🇨🇳</span>
+                            <span class="trans-value" id="trans-cn">-</span>
                         </div>
-                        <div class="lang-row">
-                            <span class="lang-label">🇪🇸 ES:</span>
-                            <span class="lang-value" id="word-es"></span>
+                        <div class="trans-row">
+                            <span class="lang-flag">🇪🇸</span>
+                            <span class="trans-value" id="trans-es">-</span>
                         </div>
-                        <div class="lang-row">
-                            <span class="lang-label">🇧🇷 PT:</span>
-                            <span class="lang-value" id="word-pt"></span>
+                        <div class="trans-row">
+                            <span class="lang-flag">🇧🇷</span>
+                            <span class="trans-value" id="trans-pt">-</span>
                         </div>
                     </div>
-                    <div class="examples-toggle" id="examples-toggle">点击显示例句</div>
-                    <div class="examples" id="examples" style="display: none;">
-                        <div class="example-block">
-                            <div class="example-lang">🇨🇳</div>
-                            <div class="example-text" id="example-cn"></div>
-                        </div>
-                        <div class="example-block">
-                            <div class="example-lang">🇬🇧</div>
-                            <div class="example-text" id="example-en"></div>
-                        </div>
-                        <div class="example-block">
-                            <div class="example-lang">🇪🇸</div>
-                            <div class="example-text" id="example-es"></div>
-                        </div>
-                        <div class="example-block">
-                            <div class="example-lang">🇧🇷</div>
-                            <div class="example-text" id="example-pt"></div>
-                        </div>
+                    
+                    <div class="hint">点击查看例句 →</div>
+                </div>
+                
+                <div class="card-face card-back">
+                    <div class="back-label">📝 例句</div>
+                    
+                    <div class="example-block-main">
+                        <span class="lang-flag">🇨🇳</span>
+                        <div class="example-text" id="example-cn"></div>
+                    </div>
+                    <div class="example-block-main">
+                        <span class="lang-flag">🇬🇧</span>
+                        <div class="example-text" id="example-en"></div>
+                    </div>
+                    <div class="example-block-main">
+                        <span class="lang-flag">🇪🇸</span>
+                        <div class="example-text" id="example-es"></div>
+                    </div>
+                    <div class="example-block-main pt-highlight">
+                        <span class="lang-flag">🇧🇷</span>
+                        <div class="example-text" id="example-pt"></div>
                     </div>
                 </div>
             </div>
@@ -85,13 +87,14 @@
         <!-- 学习模式 -->
         <div class="mode-switch">
             <label>
-                <input type="checkbox" id="show-pt"> 显示葡语（初学重点）
+                <input type="checkbox" id="show-pt"> 葡语高亮模式
             </label>
         </div>
 
         <!-- 底部提示 -->
         <footer class="footer">
-            <p>💡 学习建议：先看中文想英文，再看西语，最后重点记忆葡语</p>
+            <p>💡 学习建议：先看英文想中文，再看西语，最后重点记忆葡语</p>
+            <p>📱 空格/回车：翻转卡片 | ← 不认识 | → 认识</p>
         </footer>
     </div>
 

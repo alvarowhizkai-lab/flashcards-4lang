@@ -10,17 +10,14 @@ let showPTMode = false;
 const flashcard = document.getElementById('flashcard');
 const cardFront = document.querySelector('.card-front');
 const cardBack = document.querySelector('.card-back');
-const cardCategory = document.getElementById('card-category');
-const cardFrontWord = document.getElementById('card-front');
-const wordEn = document.getElementById('word-en');
-const wordEs = document.getElementById('word-es');
-const wordPt = document.getElementById('word-pt');
+const wordMain = document.getElementById('word-main');
+const transCn = document.getElementById('trans-cn');
+const transEs = document.getElementById('trans-es');
+const transPt = document.getElementById('trans-pt');
 const exampleCn = document.getElementById('example-cn');
 const exampleEn = document.getElementById('example-en');
 const exampleEs = document.getElementById('example-es');
 const examplePt = document.getElementById('example-pt');
-const examplesDiv = document.getElementById('examples');
-const examplesToggle = document.getElementById('examples-toggle');
 const progressFill = document.getElementById('progress-fill');
 const progressText = document.getElementById('progress');
 const knownBadge = document.getElementById('known-count');
@@ -29,13 +26,6 @@ const btnNo = document.getElementById('btn-no');
 const btnYes = document.getElementById('btn-yes');
 const btnShuffle = document.getElementById('btn-shuffle');
 const showPtCheckbox = document.getElementById('show-pt');
-
-// 分类映射
-const categoryMap = {
-    'tech': '科技',
-    'ev': '电动车',
-    'trade': '外贸'
-};
 
 // 初始化
 async function init() {
@@ -60,7 +50,7 @@ async function init() {
         updateProgress();
     } catch (error) {
         console.error('加载词汇表失败:', error);
-        cardFrontWord.textContent = '加载失败，请刷新页面';
+        wordMain.textContent = '加载失败，请刷新页面';
     }
 }
 
@@ -78,8 +68,6 @@ function showCard(index) {
     
     // 重置卡片状态
     flashcard.classList.remove('flipped');
-    examplesDiv.style.display = 'none';
-    examplesToggle.textContent = '点击显示例句';
     
     // 更新索引
     currentIndex = index % vocabulary.length;
@@ -87,34 +75,40 @@ function showCard(index) {
     
     currentCard = vocabulary[currentIndex];
     
-    // 更新卡片内容
-    cardCategory.textContent = categoryMap[currentCard.category] || currentCard.category;
-    cardFrontWord.textContent = currentCard.chinese;
+    // 更新正面内容
+    wordMain.textContent = currentCard.english;
+    transCn.textContent = currentCard.chinese;
+    transEs.textContent = currentCard.spanish;
+    transPt.textContent = currentCard.portuguese;
     
-    wordEn.textContent = currentCard.english;
-    wordEs.textContent = currentCard.spanish;
-    wordPt.textContent = currentCard.portuguese;
-    
+    // 更新背面内容（例句）
     exampleCn.textContent = currentCard.example_cn;
     exampleEn.textContent = currentCard.example_en;
     exampleEs.textContent = currentCard.example_es;
     examplePt.textContent = currentCard.example_pt;
     
-    // 根据模式调整显示
-    updateDisplayMode();
+    // 葡语高亮模式
+    updatePTMode();
     
     // 更新进度
     updateProgress();
 }
 
-// 更新显示模式
-function updateDisplayMode() {
+// 更新葡语高亮
+function updatePTMode() {
+    const ptBlock = document.querySelector('.pt-highlight');
     if (showPTMode) {
-        wordPt.style.color = '#e74c3c';
-        wordPt.style.fontWeight = 'bold';
+        transPt.style.color = '#ffd700';
+        transPt.style.fontWeight = 'bold';
+        if (ptBlock) {
+            ptBlock.style.display = 'flex';
+        }
     } else {
-        wordPt.style.color = '#333';
-        wordPt.style.fontWeight = 'normal';
+        transPt.style.color = '#fff';
+        transPt.style.fontWeight = 'normal';
+        if (ptBlock) {
+            ptBlock.style.display = 'flex';
+        }
     }
 }
 
@@ -131,44 +125,19 @@ function updateProgress() {
 
 // 卡片翻转
 flashcard.addEventListener('click', () => {
-    if (!flashcard.classList.contains('flipped')) {
-        flashcard.classList.add('flipped');
-    }
-});
-
-// 显示例句
-examplesToggle.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (examplesDiv.style.display === 'none') {
-        examplesDiv.style.display = 'block';
-        examplesToggle.textContent = '点击隐藏例句';
-    } else {
-        examplesDiv.style.display = 'none';
-        examplesToggle.textContent = '点击显示例句';
-    }
+    flashcard.classList.toggle('flipped');
 });
 
 // 不认识
 btnNo.addEventListener('click', (e) => {
     e.stopPropagation();
+    knownWords.delete(currentCard.id);
     
-    // 标记为已学
-    knownWords.add(currentCard.id);
-    
-    // 稍微延迟后下一张
     setTimeout(() => {
         let nextIndex = currentIndex + 1;
-        
-        // 如果是最后一个，回到开头
         if (nextIndex >= vocabulary.length) {
             nextIndex = 0;
-            // 重新打乱未学的词
-            const unknownWords = vocabulary.filter(w => !knownWords.has(w.id));
-            if (unknownWords.length > 0) {
-                vocabulary = shuffleWithUnknown(vocabulary, knownWords);
-            }
         }
-        
         showCard(nextIndex);
     }, 300);
 });
@@ -176,21 +145,14 @@ btnNo.addEventListener('click', (e) => {
 // 认识
 btnYes.addEventListener('click', (e) => {
     e.stopPropagation();
-    
-    // 标记为已学
     knownWords.add(currentCard.id);
     
-    // 稍微延迟后下一张
     setTimeout(() => {
         let nextIndex = currentIndex + 1;
-        
-        // 如果是最后一个，回到开头
         if (nextIndex >= vocabulary.length) {
             nextIndex = 0;
-            // 重新打乱
             shuffleVocabulary();
         }
-        
         showCard(nextIndex);
     }, 300);
 });
@@ -205,14 +167,9 @@ btnShuffle.addEventListener('click', (e) => {
 // 分类筛选
 categoryBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-        // 移除active状态
         categoryBtns.forEach(b => b.classList.remove('active'));
-        // 添加active状态
         btn.classList.add('active');
-        
         currentCategory = btn.dataset.category;
-        
-        // 重新加载词汇
         filterVocabulary();
     });
 });
@@ -229,7 +186,6 @@ async function filterVocabulary() {
             vocabulary = data[currentCategory] || [];
         }
         
-        // 重置状态
         knownWords.clear();
         showCard(0);
     } catch (error) {
@@ -237,24 +193,10 @@ async function filterVocabulary() {
     }
 }
 
-// 打乱但保留已学词位置
-function shuffleWithUnknown(arr, knownSet) {
-    const unknown = arr.filter(w => !knownSet.has(w.id));
-    const known = arr.filter(w => knownSet.has(w.id));
-    
-    shuffleVocabulary.call(unknown);
-    
-    return [...unknown, ...known];
-}
-
 // 葡语模式切换
 showPtCheckbox.addEventListener('change', (e) => {
     showPTMode = e.target.checked;
-    updateDisplayMode();
-    if (flashcard.classList.contains('flipped')) {
-        flashcard.classList.remove('flipped');
-        setTimeout(() => flashcard.classList.add('flipped'), 50);
-    }
+    updatePTMode();
 });
 
 // 页面加载完成后初始化
