@@ -181,24 +181,58 @@ body {
 }
 
 /* 正面 */
-.word-category {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 4px 12px;
-    border-radius: 15px;
-    font-size: 0.75rem;
-    margin-bottom: 15px;
-}
-
 .word-main {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: bold;
-    margin-bottom: 10px;
+    color: #1a73e8;
+    margin-bottom: 15px;
     line-height: 1.3;
 }
 
-.word-level {
-    font-size: 0.9rem;
-    opacity: 0.8;
+.hint {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: auto;
+}
+
+/* 垂直四国语对照 */
+.translations-vertical {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.trans-row-vertical {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    gap: 10px;
+}
+
+.lang-icon {
+    font-size: 1.2rem;
+    width: 30px;
+    flex-shrink: 0;
+}
+
+.lang-name {
+    font-size: 0.85rem;
+    color: #666;
+    width: 65px;
+    flex-shrink: 0;
+    text-align: left;
+}
+
+.lang-trans {
+    font-size: 1rem;
+    color: #333;
+    font-weight: 500;
+    text-align: left;
+    flex: 1;
 }
 
 /* 背面 */

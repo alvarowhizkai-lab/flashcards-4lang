@@ -35,7 +35,6 @@ function cacheElements() {
     
     // 学习模式
     elements.studyCard = document.getElementById('study-card');
-    elements.studyCategory = document.getElementById('study-category');
     elements.studyWord = document.getElementById('study-word');
     elements.studyCn = document.getElementById('study-cn');
     elements.studyEs = document.getElementById('study-es');
@@ -245,13 +244,13 @@ function showStudyCard(index) {
     // 重置翻转
     elements.studyCard.classList.remove('flipped');
     
-    // 更新内容
-    const categoryMap = { tech: '科技', ev: '电动车', trade: '外贸' };
-    elements.studyCategory.textContent = categoryMap[card.category] || card.category;
+    // 更新正面内容
     elements.studyWord.textContent = card.english;
     elements.studyCn.textContent = card.chinese;
     elements.studyEs.textContent = card.spanish;
     elements.studyPt.textContent = card.portuguese;
+    
+    // 更新背面例句
     elements.studyExCn.textContent = card.example_cn;
     elements.studyExEn.textContent = card.example_en;
     elements.studyExEs.textContent = card.example_es;
