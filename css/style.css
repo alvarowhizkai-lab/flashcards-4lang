@@ -1,0 +1,334 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 500px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+/* 头部 */
+.header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+.header h1 {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+}
+
+.stats {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    font-size: 0.9rem;
+}
+
+.known-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+/* 分类筛选 */
+.category-filter {
+    display: flex;
+    padding: 15px;
+    gap: 10px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+}
+
+.cat-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    background: white;
+    color: #333;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.cat-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.cat-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+/* 卡片区域 */
+.card-area {
+    padding: 20px;
+}
+
+.progress-bar {
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+    width: 0%;
+}
+
+.flashcard {
+    perspective: 1000px;
+    min-height: 350px;
+    cursor: pointer;
+}
+
+.card-face {
+    border-radius: 15px;
+    padding: 30px;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.flashcard.flipped .card-front {
+    transform: rotateY(180deg);
+}
+
+.flashcard.flipped .card-back {
+    transform: rotateY(0deg);
+}
+
+.card-front {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    position: absolute;
+    width: calc(100% - 0px);
+    height: calc(100% - 0px);
+}
+
+.card-back {
+    background: white;
+    border: 2px solid #667eea;
+    transform: rotateY(180deg);
+    position: relative;
+}
+
+.category-tag {
+    background: rgba(255,255,255,0.2);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    margin-bottom: 20px;
+}
+
+.word {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.hint {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* 翻译展示 */
+.translations {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.lang-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.lang-row:last-child {
+    border-bottom: none;
+}
+
+.lang-label {
+    font-size: 0.85rem;
+    width: 50px;
+    flex-shrink: 0;
+}
+
+.lang-value {
+    font-size: 1rem;
+    color: #333;
+    text-align: left;
+}
+
+.examples-toggle {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+}
+
+.examples-toggle:hover {
+    transform: scale(1.05);
+}
+
+.examples {
+    margin-top: 15px;
+    width: 100%;
+}
+
+.example-block {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.example-lang {
+    font-size: 0.8rem;
+    margin-bottom: 5px;
+}
+
+.example-text {
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.5;
+}
+
+/* 操作按钮 */
+.actions {
+    display: flex;
+    padding: 20px;
+    gap: 15px;
+}
+
+.btn {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.btn-no {
+    background: #ff6b6b;
+    color: white;
+}
+
+.btn-yes {
+    background: #51cf66;
+    color: white;
+}
+
+.btn-shuffle {
+    background: #ffd43b;
+    color: #333;
+    flex: 0.6;
+}
+
+/* 学习模式 */
+.mode-switch {
+    padding: 0 20px 15px;
+    text-align: center;
+}
+
+.mode-switch label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.mode-switch input {
+    width: 18px;
+    height: 18px;
+}
+
+/* 底部 */
+.footer {
+    background: #f8f9fa;
+    padding: 15px;
+    text-align: center;
+}
+
+.footer p {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* 响应式 */
+@media (max-width: 480px) {
+    .app-container {
+        border-radius: 0;
+        min-height: 100vh;
+    }
+    
+    .word {
+        font-size: 1.5rem;
+    }
+    
+    .actions {
+        flex-wrap: wrap;
+    }
+    
+    .btn-shuffle {
+        flex: 1;
+        order: -1;
+        margin-bottom: 10px;
+    }
+}
+
+/* 动画 */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.flashcard {
+    animation: fadeIn 0.5s ease;
+}
