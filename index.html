@@ -8,7 +8,6 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- 顶部导航 -->
         <header class="header">
             <div class="header-top">
                 <h1>🇨🇳🇬🇧🇪🇸🇧🇷 四国语言背单词 Pro</h1>
@@ -16,209 +15,104 @@
             </div>
             <nav class="nav-tabs">
                 <button class="nav-tab active" data-tab="study">📖 学习</button>
-                <button class="nav-tab" data-tab="mistakes">📝 错题本</button>
                 <button class="nav-tab" data-tab="quiz">🎯 测验</button>
                 <button class="nav-tab" data-tab="stats">📊 统计</button>
             </nav>
         </header>
 
-        <!-- 主内容区 -->
         <main class="main-content">
             <!-- 学习模式 -->
             <section id="study-section" class="section active">
                 <div class="category-filter">
-                    <button class="cat-btn active" data-category="all">全部</button>
-                    <button class="cat-btn" data-category="tech">科技</button>
-                    <button class="cat-btn" data-category="ev">电动车</button>
-                    <button class="cat-btn" data-category="trade">外贸</button>
+                    <button class="cat-btn active" data-cat="all">全部</button>
+                    <button class="cat-btn" data-cat="tech">科技</button>
+                    <button class="cat-btn" data-cat="ev">电动车</button>
+                    <button class="cat-btn" data-cat="trade">外贸</button>
                 </div>
                 
                 <div class="progress-bar">
                     <div class="progress-fill" id="study-progress"></div>
                 </div>
                 
-                <div class="flashcard" id="study-card">
-                    <div class="card-face card-front">
-                        <!-- 顶部：英文主词 -->
-                        <div class="word-main" id="study-word">点击开始学习</div>
-                        
-                        <!-- 下方：四国语对照 -->
-                        <div class="translations-vertical">
-                            <div class="trans-row-vertical">
-                                <span class="lang-icon">🇪🇸</span>
-                                <span class="lang-name">西班牙语</span>
-                                <span class="lang-trans" id="study-es"></span>
+                <div class="flashcard" id="flashcard">
+                    <div class="card-inner" id="card-inner">
+                        <!-- 正面 -->
+                        <div class="card-face card-front">
+                            <div class="word-english" id="word-en">点击开始学习</div>
+                            <div class="lang-rows">
+                                <div class="lang-row">
+                                    <span class="flag">🇪🇸</span>
+                                    <span class="label">西班牙语</span>
+                                    <span class="trans" id="trans-es"></span>
+                                </div>
+                                <div class="lang-row">
+                                    <span class="flag">🇧🇷</span>
+                                    <span class="label">葡萄牙语</span>
+                                    <span class="trans" id="trans-pt"></span>
+                                </div>
+                                <div class="lang-row">
+                                    <span class="flag">🇨🇳</span>
+                                    <span class="label">中文</span>
+                                    <span class="trans" id="trans-cn"></span>
+                                </div>
                             </div>
-                            <div class="trans-row-vertical">
-                                <span class="lang-icon">🇧🇷</span>
-                                <span class="lang-name">葡萄牙语</span>
-                                <span class="lang-trans" id="study-pt"></span>
-                            </div>
-                            <div class="trans-row-vertical">
-                                <span class="lang-icon">🇨🇳</span>
-                                <span class="lang-name">中文</span>
-                                <span class="lang-trans" id="study-cn"></span>
-                            </div>
+                            <div class="tap-hint">👆 点击查看例句</div>
                         </div>
-                        
-                        <div class="hint">点击查看例句 →</div>
-                    </div>
-                    <div class="card-face card-back">
-                        <div class="back-label">📝 例句</div>
-                        <div class="example-row">
-                            <span class="lang-flag">🇨🇳</span>
-                            <span class="example-text" id="study-ex-cn"></span>
-                        </div>
-                        <div class="example-row">
-                            <span class="lang-flag">🇬🇧</span>
-                            <span class="example-text" id="study-ex-en"></span>
-                        </div>
-                        <div class="example-row">
-                            <span class="lang-flag">🇪🇸</span>
-                            <span class="example-text" id="study-ex-es"></span>
-                        </div>
-                        <div class="example-row pt-row">
-                            <span class="lang-flag">🇧🇷</span>
-                            <span class="example-text" id="study-ex-pt"></span>
+                        <!-- 背面 -->
+                        <div class="card-face card-back">
+                            <div class="example-label">📝 例句</div>
+                            <div class="example-row"><span class="flag">🇨🇳</span><span class="ex-text" id="ex-cn"></span></div>
+                            <div class="example-row"><span class="flag">🇬🇧</span><span class="ex-text" id="ex-en"></span></div>
+                            <div class="example-row"><span class="flag">🇪🇸</span><span class="ex-text" id="ex-es"></span></div>
+                            <div class="example-row pt-row"><span class="flag">🇧🇷</span><span class="ex-text" id="ex-pt"></span></div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="actions">
-                    <button class="btn btn-no" id="study-btn-no">😕 不认识</button>
-                    <button class="btn btn-shuffle" id="study-btn-shuffle">🔀 随机</button>
-                    <button class="btn btn-yes" id="study-btn-yes">😊 认识</button>
-                </div>
-            </section>
-
-            <!-- 错题本 -->
-            <section id="mistakes-section" class="section">
-                <div class="section-header">
-                    <h2>📝 错题本</h2>
-                    <span class="badge" id="mistakes-count">0 词</span>
-                </div>
-                <div class="mistakes-list" id="mistakes-list">
-                    <div class="empty-state">还没有错题，继续加油！💪</div>
-                </div>
-                <div class="mistakes-actions">
-                    <button class="btn btn-primary" id="review-mistakes">🔄 复习错题</button>
-                    <button class="btn btn-danger" id="clear-mistakes">🗑️ 清空错题</button>
+                    <button class="btn btn-no" id="btn-no">😕 不认识</button>
+                    <button class="btn btn-shuffle" id="btn-shuffle">🔀 随机</button>
+                    <button class="btn btn-yes" id="btn-yes">😊 认识</button>
                 </div>
             </section>
 
             <!-- 测验模式 -->
             <section id="quiz-section" class="section">
-                <div class="section-header">
-                    <h2>🎯 四国语小测验</h2>
-                    <div class="quiz-info">
-                        <span id="quiz-progress">0 / 10</span>
-                        <span id="quiz-score">正确: 0</span>
-                    </div>
+                <div class="quiz-header">
+                    <h2>🎯 四国语测验</h2>
+                    <span id="quiz-info">0 / 10 | 正确: 0</span>
                 </div>
-                
                 <div class="quiz-card" id="quiz-card">
-                    <div class="quiz-question" id="quiz-question">
-                        点击下方开始测验
-                    </div>
-                    <div class="quiz-options" id="quiz-options">
-                        <button class="quiz-option" data-index="0">开始测验</button>
-                    </div>
-                    <div class="quiz-result" id="quiz-result" style="display: none;">
-                        <div class="result-icon">✅</div>
-                        <div class="result-text" id="result-text"></div>
-                    </div>
+                    <div class="quiz-question" id="quiz-q">点击下方开始</div>
+                    <div class="quiz-options" id="quiz-options"></div>
                 </div>
-                
                 <div class="quiz-settings">
-                    <label>
-                        题目数量:
-                        <select id="quiz-count">
-                            <option value="5">5 题</option>
-                            <option value="10" selected>10 题</option>
-                            <option value="20">20 题</option>
-                        </select>
-                    </label>
-                    <label>
-                        测验类型:
-                        <select id="quiz-type">
-                            <option value="en2pt">英语 → 葡语</option>
-                            <option value="en2es">英语 → 西语</option>
-                            <option value="random">混合</option>
-                        </select>
-                    </label>
+                    <select id="quiz-count"><option value="5">5题</option><option value="10" selected>10题</option><option value="20">20题</option></select>
+                    <select id="quiz-type"><option value="pt">英→葡</option><option value="es">英→西</option><option value="mixed">混合</option></select>
                 </div>
-                
                 <button class="btn btn-primary btn-large" id="start-quiz">🚀 开始测验</button>
             </section>
 
             <!-- 统计 -->
             <section id="stats-section" class="section">
-                <div class="section-header">
-                    <h2>📊 学习统计</h2>
-                </div>
-                
+                <div class="stats-header"><h2>📊 学习统计</h2></div>
                 <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">📚</div>
-                        <div class="stat-value" id="stat-total">0</div>
-                        <div class="stat-label">总词汇量</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">✅</div>
-                        <div class="stat-value" id="stat-learned">0</div>
-                        <div class="stat-label">已掌握</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">❌</div>
-                        <div class="stat-value" id="stat-mistakes">0</div>
-                        <div class="stat-label">错题数</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">📈</div>
-                        <div class="stat-value" id="stat-accuracy">0%</div>
-                        <div class="stat-label">正确率</div>
-                    </div>
+                    <div class="stat-box"><div class="stat-num" id="stat-total">0</div><div class="stat-txt">总词数</div></div>
+                    <div class="stat-box"><div class="stat-num" id="stat-learned">0</div><div class="stat-txt">已掌握</div></div>
+                    <div class="stat-box"><div class="stat-num" id="stat-mistakes">0</div><div class="stat-txt">错题</div></div>
+                    <div class="stat-box"><div class="stat-num" id="stat-rate">0%</div><div class="stat-txt">正确率</div></div>
                 </div>
-                
-                <div class="stats-detail">
-                    <h3>分类进度</h3>
-                    <div class="category-stats">
-                        <div class="cat-stat">
-                            <span class="cat-name">科技</span>
-                            <div class="cat-progress">
-                                <div class="cat-fill" id="cat-tech-fill" style="width: 0%"></div>
-                            </div>
-                            <span class="cat-count" id="cat-tech">0 / 15</span>
-                        </div>
-                        <div class="cat-stat">
-                            <span class="cat-name">电动车</span>
-                            <div class="cat-progress">
-                                <div class="cat-fill" id="cat-ev-fill" style="width: 0%"></div>
-                            </div>
-                            <span class="cat-count" id="cat-ev">0 / 15</span>
-                        </div>
-                        <div class="cat-stat">
-                            <span class="cat-name">外贸</span>
-                            <div class="cat-progress">
-                                <div class="cat-fill" id="cat-trade-fill" style="width: 0%"></div>
-                            </div>
-                            <span class="cat-count" id="cat-trade">0 / 15</span>
-                        </div>
-                    </div>
+                <div class="cat-progress-section">
+                    <div class="cat-p"><span class="cat-n">科技</span><div class="cat-b"><div class="cat-f" id="prog-tech"></div></div><span class="cat-c" id="cnt-tech">0/15</span></div>
+                    <div class="cat-p"><span class="cat-n">电动车</span><div class="cat-b"><div class="cat-f" id="prog-ev"></div></div><span class="cat-c" id="cnt-ev">0/15</span></div>
+                    <div class="cat-p"><span class="cat-n">外贸</span><div class="cat-b"><div class="cat-f" id="prog-trade"></div></div><span class="cat-c" id="cnt-trade">0/15</span></div>
                 </div>
-                
-                <div class="stats-actions">
-                    <button class="btn btn-danger" id="reset-progress">🔄 重置进度</button>
-                </div>
+                <button class="btn btn-danger" id="reset-all">🔄 重置进度</button>
             </section>
         </main>
 
-        <!-- 底部提示 -->
-        <footer class="footer">
-            <p>💡 空格/回车：翻转卡片 | ← 不认识 | → 认识</p>
-        </footer>
+        <footer class="footer">💡 空格/回车:翻转 | ←不认识 | →认识</footer>
     </div>
-
     <script src="js/app.js"></script>
 </body>
 </html>

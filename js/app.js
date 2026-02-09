@@ -1,489 +1,281 @@
-// ============ 全局状态 ============
-let vocabulary = [];
-let learnedWords = new Set();      // 已掌握
-let mistakeWords = new Set();      // 错题本
-let quizHistory = [];              // 测验历史
+// Global state
+let vocab = [];
+let learned = new Set();
+let quizHist = [];
+let idx = 0;
+let cat = 'all';
 
-// 学习模式状态
-let studyIndex = 0;
-let studyCategory = 'all';
+// Quiz state
+let qList = [];
+let qIdx = 0;
+let qScore = 0;
 
-// 测验模式状态
-let quizCurrent = 0;
-let quizScore = 0;
-let quizQuestions = [];
-let quizAnswered = false;
-
-// DOM缓存
-const elements = {};
-
-// ============ 初始化 ============
+// Init
 document.addEventListener('DOMContentLoaded', async () => {
-    cacheElements();
-    loadProgress();
-    await loadVocabulary();
-    setupEventListeners();
+    loadData();
+    await loadVocab();
+    bindEvents();
+    showCard(0);
     updateStats();
-    showSection('study');
 });
 
-// 缓存DOM元素
-function cacheElements() {
-    // 导航
-    elements.navTabs = document.querySelectorAll('.nav-tab');
-    elements.sections = document.querySelectorAll('.section');
-    
-    // 学习模式
-    elements.studyCard = document.getElementById('study-card');
-    elements.studyWord = document.getElementById('study-word');
-    elements.studyCn = document.getElementById('study-cn');
-    elements.studyEs = document.getElementById('study-es');
-    elements.studyPt = document.getElementById('study-pt');
-    elements.studyExCn = document.getElementById('study-ex-cn');
-    elements.studyExEn = document.getElementById('study-ex-en');
-    elements.studyExEs = document.getElementById('study-ex-es');
-    elements.studyExPt = document.getElementById('study-ex-pt');
-    elements.studyProgress = document.getElementById('study-progress');
-    elements.totalProgress = document.getElementById('total-progress');
-    elements.studyBtnNo = document.getElementById('study-btn-no');
-    elements.studyBtnYes = document.getElementById('study-btn-yes');
-    elements.studyBtnShuffle = document.getElementById('study-btn-shuffle');
-    elements.catBtns = document.querySelectorAll('.cat-btn');
-    
-    // 错题本
-    elements.mistakesList = document.getElementById('mistakes-list');
-    elements.mistakesCount = document.getElementById('mistakes-count');
-    elements.reviewMistakes = document.getElementById('review-mistakes');
-    elements.clearMistakes = document.getElementById('clear-mistakes');
-    
-    // 测验
-    elements.quizCard = document.getElementById('quiz-card');
-    elements.quizQuestion = document.getElementById('quiz-question');
-    elements.quizOptions = document.getElementById('quiz-options');
-    elements.quizProgress = document.getElementById('quiz-progress');
-    elements.quizScore = document.getElementById('quiz-score');
-    elements.quizResult = document.getElementById('quiz-result');
-    elements.resultText = document.getElementById('result-text');
-    elements.quizCount = document.getElementById('quiz-count');
-    elements.quizType = document.getElementById('quiz-type');
-    elements.startQuiz = document.getElementById('start-quiz');
-    
-    // 统计
-    elements.statTotal = document.getElementById('stat-total');
-    elements.statLearned = document.getElementById('stat-learned');
-    elements.statMistakes = document.getElementById('stat-mistakes');
-    elements.statAccuracy = document.getElementById('stat-accuracy');
-    elements.catTechFill = document.getElementById('cat-tech-fill');
-    elements.catEvFill = document.getElementById('cat-ev-fill');
-    elements.catTradeFill = document.getElementById('cat-trade-fill');
-    elements.catTech = document.getElementById('cat-tech');
-    elements.catEv = document.getElementById('cat-ev');
-    elements.catTrade = document.getElementById('cat-trade');
-    elements.resetProgress = document.getElementById('reset-progress');
+// Load progress
+function loadData() {
+    try {
+        const d = JSON.parse(localStorage.getItem('fc4-prog') || '{}');
+        learned = new Set(d.learned || []);
+        quizHist = d.quiz || [];
+    } catch(e) {}
 }
 
-// 加载词汇
-async function loadVocabulary() {
+// Save progress
+function saveData() {
+    localStorage.setItem('fc4-prog', JSON.stringify({
+        learned: [...learned],
+        quiz: quizHist
+    }));
+}
+
+// Load vocabulary
+async function loadVocab() {
     try {
-        const response = await fetch('data/vocabulary.json');
-        const data = await response.json();
-        vocabulary = [...data.tech, ...data.ev, ...data.trade];
-        shuffleVocabulary();
-        showStudyCard(0);
-        updateStats();
-    } catch (error) {
-        console.error('加载词汇失败:', error);
-        elements.studyWord.textContent = '加载失败，请刷新';
+        const r = await fetch('data/vocabulary.json');
+        const d = await r.json();
+        vocab = [...d.tech, ...d.ev, ...d.trade];
+        shuffle();
+    } catch(e) {
+        console.error('Load vocab error:', e);
     }
 }
 
-// 加载进度
-function loadProgress() {
-    try {
-        const saved = localStorage.getItem('flashcards-progress');
-        if (saved) {
-            const data = JSON.parse(saved);
-            learnedWords = new Set(data.learned || []);
-            mistakeWords = new Set(data.mistakes || []);
-            quizHistory = data.quizHistory || [];
+// Shuffle
+function shuffle() {
+    for (let i = vocab.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [vocab[i], vocab[j]] = [vocab[j], vocab[i]];
+    }
+}
+
+// Show card
+function showCard(i) {
+    if (!vocab.length) return;
+    idx = (i % vocab.length + vocab.length) % vocab.length;
+    const v = vocab[idx];
+    
+    // Reset flip
+    document.getElementById('flashcard').classList.remove('flipped');
+    
+    // Update front
+    document.getElementById('word-en').textContent = v.english;
+    document.getElementById('trans-es').textContent = v.spanish;
+    document.getElementById('trans-pt').textContent = v.portuguese;
+    document.getElementById('trans-cn').textContent = v.chinese;
+    
+    // Update back
+    document.getElementById('ex-cn').textContent = v.example_cn;
+    document.getElementById('ex-en').textContent = v.example_en;
+    document.getElementById('ex-es').textContent = v.example_es;
+    document.getElementById('ex-pt').textContent = v.example_pt;
+    
+    // Update progress
+    const total = vocab.length;
+    document.getElementById('total-progress').textContent = `${idx + 1} / ${total}`;
+    document.getElementById('study-progress').style.width = `${((idx + 1) / total) * 100}%`;
+}
+
+// Handle result
+function handleResult(known) {
+    const v = vocab[idx];
+    if (known) {
+        learned.add(v.id);
+    } else {
+        learned.delete(v.id);
+    }
+    saveData();
+    updateStats();
+    
+    setTimeout(() => {
+        let ni = idx + 1;
+        if (ni >= vocab.length) {
+            ni = 0;
+            shuffle();
         }
-    } catch (e) {
-        console.error('加载进度失败:', e);
-    }
+        showCard(ni);
+    }, 200);
 }
 
-// 保存进度
-function saveProgress() {
-    try {
-        const data = {
-            learned: [...learnedWords],
-            mistakes: [...mistakeWords],
-            quizHistory: quizHistory
+// Bind events
+function bindEvents() {
+    // Flip card
+    document.getElementById('flashcard').addEventListener('click', () => {
+        document.getElementById('flashcard').classList.toggle('flipped');
+    });
+    
+    // Buttons
+    document.getElementById('btn-no').onclick = (e) => { e.stopPropagation(); handleResult(false); };
+    document.getElementById('btn-yes').onclick = (e) => { e.stopPropagation(); handleResult(true); };
+    document.getElementById('btn-shuffle').onclick = (e) => { e.stopPropagation(); shuffle(); showCard(0); };
+    
+    // Category filter
+    document.querySelectorAll('.cat-btn').forEach(b => {
+        b.onclick = () => {
+            document.querySelectorAll('.cat-btn').forEach(x => x.classList.remove('active'));
+            b.classList.add('active');
+            cat = b.dataset.cat;
+            filterVocab();
         };
-        localStorage.setItem('flashcards-progress', JSON.stringify(data));
-    } catch (e) {
-        console.error('保存进度失败:', e);
-    }
-}
-
-// 设置事件监听
-function setupEventListeners() {
-    // 导航
-    elements.navTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            elements.navTabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            showSection(tab.dataset.tab);
-        });
     });
     
-    // 学习模式
-    elements.studyCard.addEventListener('click', () => {
-        elements.studyCard.classList.toggle('flipped');
+    // Tabs
+    document.querySelectorAll('.nav-tab').forEach(t => {
+        t.onclick = () => {
+            document.querySelectorAll('.nav-tab').forEach(x => x.classList.remove('active'));
+            t.classList.add('active');
+            showSection(t.dataset.tab);
+        };
     });
     
-    elements.studyBtnNo.addEventListener('click', (e) => {
-        e.stopPropagation();
-        handleStudyResult(false);
-    });
+    // Quiz
+    document.getElementById('start-quiz').onclick = startQuiz;
     
-    elements.studyBtnYes.addEventListener('click', (e) => {
-        e.stopPropagation();
-        handleStudyResult(true);
-    });
-    
-    elements.studyBtnShuffle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        shuffleVocabulary();
-        showStudyCard(0);
-    });
-    
-    // 分类筛选
-    elements.catBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            elements.catBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            studyCategory = btn.dataset.category;
-            shuffleVocabulary();
-            showStudyCard(0);
-        });
-    });
-    
-    // 错题本
-    elements.reviewMistakes.addEventListener('click', () => {
-        elements.navTabs.forEach(t => t.classList.remove('active'));
-        document.querySelector('[data-tab="study"]').classList.add('active');
-        showSection('study');
-        
-        // 筛选错题
-        const mistakesArray = vocabulary.filter(v => mistakeWords.has(v.id));
-        if (mistakesArray.length > 0) {
-            vocabulary = [...mistakesArray];
-            shuffleVocabulary();
-            showStudyCard(0);
-        }
-    });
-    
-    elements.clearMistakes.addEventListener('click', () => {
-        if (confirm('确定清空所有错题吗？')) {
-            mistakeWords.clear();
-            saveProgress();
-            renderMistakes();
+    // Reset
+    document.getElementById('reset-all').onclick = () => {
+        if (confirm('重置所有进度？')) {
+            learned.clear();
+            quizHist = [];
+            saveData();
             updateStats();
         }
-    });
+    };
     
-    // 测验
-    elements.startQuiz.addEventListener('click', startQuiz);
-    
-    // 统计
-    elements.resetProgress.addEventListener('click', () => {
-        if (confirm('确定重置所有学习进度吗？\n这将清除已掌握和错题记录。')) {
-            learnedWords.clear();
-            mistakeWords.clear();
-            quizHistory = [];
-            saveProgress();
-            updateStats();
-            renderMistakes();
-        }
-    });
-    
-    // 键盘快捷键
-    document.addEventListener('keydown', (e) => {
-        const activeSection = document.querySelector('.section.active').id;
-        
-        if (activeSection === 'study-section') {
-            if (e.key === 'ArrowLeft') {
-                handleStudyResult(false);
-            } else if (e.key === 'ArrowRight') {
-                handleStudyResult(true);
-            } else if (e.key === ' ' || e.key === 'Enter') {
+    // Keyboard
+    document.addEventListener('keydown', e => {
+        const sec = document.querySelector('.section.active').id;
+        if (sec === 'study-section') {
+            if (e.key === 'ArrowLeft') handleResult(false);
+            else if (e.key === 'ArrowRight') handleResult(true);
+            else if (e.key === ' ' || e.key === 'Enter') {
                 e.preventDefault();
-                elements.studyCard.classList.toggle('flipped');
+                document.getElementById('flashcard').classList.toggle('flipped');
             }
         }
     });
 }
 
-// ============ 学习模式 ============
-function shuffleVocabulary() {
-    for (let i = vocabulary.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [vocabulary[i], vocabulary[j]] = [vocabulary[j], vocabulary[i]];
-    }
-}
-
-function showStudyCard(index) {
-    if (vocabulary.length === 0) return;
-    
-    studyIndex = index % vocabulary.length;
-    if (studyIndex < 0) studyIndex = vocabulary.length - 1;
-    
-    const card = vocabulary[studyIndex];
-    
-    // 重置翻转
-    elements.studyCard.classList.remove('flipped');
-    
-    // 更新正面内容
-    elements.studyWord.textContent = card.english;
-    elements.studyCn.textContent = card.chinese;
-    elements.studyEs.textContent = card.spanish;
-    elements.studyPt.textContent = card.portuguese;
-    
-    // 更新背面例句
-    elements.studyExCn.textContent = card.example_cn;
-    elements.studyExEn.textContent = card.example_en;
-    elements.studyExEs.textContent = card.example_es;
-    elements.studyExPt.textContent = card.example_pt;
-    
-    // 更新进度
-    const shown = studyIndex + 1;
-    const total = vocabulary.length;
-    elements.totalProgress.textContent = `${shown} / ${total}`;
-    elements.studyProgress.style.width = `${(shown / total) * 100}%`;
-}
-
-function handleStudyResult(known) {
-    const card = vocabulary[studyIndex];
-    
-    if (known) {
-        learnedWords.add(card.id);
-        mistakeWords.delete(card.id);
-    } else {
-        mistakeWords.add(card.id);
-    }
-    
-    saveProgress();
-    updateStats();
-    renderMistakes();
-    
-    // 下一张
-    setTimeout(() => {
-        let nextIndex = studyIndex + 1;
-        if (nextIndex >= vocabulary.length) {
-            nextIndex = 0;
-            shuffleVocabulary();
+// Filter vocab
+function filterVocab() {
+    loadVocab().then(() => {
+        if (cat !== 'all') {
+            vocab = vocab.filter(v => v.category === cat);
         }
-        showStudyCard(nextIndex);
-    }, 300);
+        showCard(0);
+    });
 }
 
-// ============ 错题本 ============
-function renderMistakes() {
-    const mistakes = vocabulary.filter(v => mistakeWords.has(v.id));
-    elements.mistakesCount.textContent = `${mistakes.length} 词`;
+// Show section
+function showSection(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(name + '-section').classList.add('active');
+    if (name === 'stats') updateStats();
+}
+
+// Update stats
+function updateStats() {
+    const total = vocab.length;
+    const learn = vocab.filter(v => learned.has(v.id)).length;
+    const qTotal = quizHist.reduce((a, b) => a + b.total, 0);
+    const qCorrect = quizHist.reduce((a, b) => a + b.correct, 0);
+    const rate = qTotal ? Math.round((qCorrect / qTotal) * 100) : 0;
     
-    if (mistakes.length === 0) {
-        elements.mistakesList.innerHTML = '<div class="empty-state">还没有错题，继续加油！💪</div>';
-        return;
-    }
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-learned').textContent = learn;
+    document.getElementById('stat-mistakes').textContent = vocab.filter(v => learned.has(v.id) === false).length;
+    document.getElementById('stat-rate').textContent = rate + '%';
     
-    elements.mistakesList.innerHTML = mistakes.map(v => `
-        <div class="mistakes-item" data-id="${v.id}">
-            <div>
-                <div class="mistakes-word">${v.english}</div>
-                <div class="mistakes-trans">${v.spanish} / ${v.portuguese}</div>
-            </div>
-            <button class="btn btn-primary" style="flex: 0; padding: 8px 15px;" onclick="removeMistake(${v.id})">消除</button>
-        </div>
-    `).join('');
+    // Categories
+    ['tech', 'ev', 'trade'].forEach(c => {
+        const arr = vocab.filter(v => v.category === c);
+        const l = arr.filter(v => learned.has(v.id)).length;
+        document.getElementById('prog-' + c).style.width = (arr.length ? (l / arr.length) * 100 : 0) + '%';
+        document.getElementById('cnt-' + c).textContent = l + '/' + arr.length;
+    });
 }
 
-function removeMistake(id) {
-    mistakeWords.delete(id);
-    saveProgress();
-    renderMistakes();
-    updateStats();
-}
-
-// ============ 测验模式 ============
+// Quiz functions
 function startQuiz() {
-    const count = parseInt(elements.quizCount.value);
-    const type = elements.quizType.value;
+    const count = parseInt(document.getElementById('quiz-count').value);
+    const type = document.getElementById('quiz-type').value;
     
-    // 随机选题
-    const shuffled = [...vocabulary];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    
-    quizQuestions = shuffled.slice(0, count);
-    quizCurrent = 0;
-    quizScore = 0;
-    quizHistory = [];
-    
-    showQuizQuestion();
+    qList = [...vocab].sort(() => Math.random() - 0.5).slice(0, count);
+    qIdx = 0;
+    qScore = 0;
+    showQuizQ();
 }
 
-function showQuizQuestion() {
-    if (quizCurrent >= quizQuestions.length) {
-        // 测验结束
-        const accuracy = Math.round((quizScore / quizQuestions.length) * 100);
-        elements.quizQuestion.textContent = '测验完成！🎉';
-        elements.quizOptions.innerHTML = `
-            <div class="quiz-result" style="display: block; background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px;">
-                <div class="result-icon" style="font-size: 3rem;">${accuracy >= 70 ? '🎉' : '💪'}</div>
-                <div style="font-size: 1.2rem; margin-top: 10px;">
-                    正确 ${quizScore} / ${quizQuestions.length} (${accuracy}%)
-                </div>
-            </div>
+function showQuizQ() {
+    if (qIdx >= qList.length) {
+        const rate = Math.round((qScore / qList.length) * 100);
+        quizHist.push({ total: qList.length, correct: qScore });
+        saveData();
+        
+        document.getElementById('quiz-q').innerHTML = `
+            <div style="font-size:2rem;margin-bottom:10px;">${rate >= 70 ? '🎉' : '💪'}</div>
+            <div>完成！${qScore}/${qList.length} (${rate}%)</div>
+        `;
+        document.getElementById('quiz-options').innerHTML = `
             <button class="quiz-option" onclick="startQuiz()">🔄 再测一次</button>
         `;
-        
-        // 保存记录
-        quizHistory.push({
-            date: new Date().toISOString(),
-            score: quizScore,
-            total: quizQuestions.length,
-            accuracy: accuracy
-        });
-        saveProgress();
         return;
     }
     
-    const card = quizQuestions[quizCurrent];
-    const type = elements.quizType.value;
+    const v = qList[qIdx];
+    const type = document.getElementById('quiz-type').value;
+    let qText, ans, opts;
     
-    quizAnswered = false;
-    elements.quizResult.style.display = 'none';
-    
-    // 生成题目
-    let question, answer, options;
-    
-    if (type === 'en2pt' || (type === 'random' && Math.random() > 0.5)) {
-        question = card.english;
-        answer = card.portuguese;
-        options = generateOptions(card, 'portuguese');
+    if (type === 'pt' || (type === 'mixed' && Math.random() > 0.5)) {
+        qText = v.english;
+        ans = v.portuguese;
+        opts = getOpts(v, 'portuguese');
     } else {
-        question = card.english;
-        answer = card.spanish;
-        options = generateOptions(card, 'spanish');
+        qText = v.english;
+        ans = v.spanish;
+        opts = getOpts(v, 'spanish');
     }
     
-    // 随机正确答案位置
-    const correctIndex = Math.floor(Math.random() * 4);
-    options.splice(correctIndex, 0, answer);
+    const correctIdx = Math.floor(Math.random() * 4);
+    opts.splice(correctIdx, 0, ans);
     
-    elements.quizProgress.textContent = `${quizCurrent + 1} / ${quizQuestions.length}`;
-    elements.quizScore.textContent = `正确: ${quizScore}`;
-    elements.quizQuestion.textContent = question;
-    
-    elements.quizOptions.innerHTML = options.map((opt, i) => `
-        <button class="quiz-option" data-answer="${opt}" onclick="checkAnswer(this, '${answer}')">${opt}</button>
-    `).join('');
+    document.getElementById('quiz-q').textContent = qText;
+    document.getElementById('quiz-info').textContent = `${qIdx + 1} / ${qList.length} | 正确: ${qScore}`;
+    document.getElementById('quiz-options').innerHTML = opts.map((o, i) => 
+        `<button class="quiz-option" onclick="checkQuiz(this, '${ans.replace(/'/g, "\\'")}')">${o}</button>`
+    ).join('');
 }
 
-function generateOptions(correctCard, lang) {
-    const allTranslations = vocabulary
-        .filter(v => v.id !== correctCard.id)
-        .map(v => lang === 'spanish' ? v.spanish : v.portuguese);
-    
-    // 随机选3个干扰项
-    const shuffled = [...allTranslations];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    
-    return shuffled.slice(0, 3);
+function getOpts(correct, lang) {
+    const all = vocab.filter(v => v.id !== correct.id).map(v => v[lang]);
+    return all.sort(() => Math.random() - 0.5).slice(0, 3);
 }
 
-function checkAnswer(btn, correctAnswer) {
-    if (quizAnswered) return;
-    quizAnswered = true;
+function checkQuiz(btn, correct) {
+    if (btn.classList.contains('answered')) return;
+    btn.classList.add('answered');
     
-    const buttons = document.querySelectorAll('.quiz-option');
-    buttons.forEach(b => b.disabled = true);
+    const opts = document.querySelectorAll('.quiz-option');
+    opts.forEach(o => o.disabled = true);
     
-    if (btn.dataset.answer === correctAnswer) {
+    if (btn.textContent === correct) {
         btn.classList.add('correct');
-        quizScore++;
-        mistakeWords.delete(vocabulary[studyIndex]?.id);
+        qScore++;
     } else {
         btn.classList.add('wrong');
-        // 显示正确答案
-        buttons.forEach(b => {
-            if (b.dataset.answer === correctAnswer) {
-                b.classList.add('correct');
-            }
+        opts.forEach(o => {
+            if (o.textContent === correct) o.classList.add('correct');
         });
     }
     
-    saveProgress();
-    
     setTimeout(() => {
-        quizCurrent++;
-        showQuizQuestion();
-    }, 1000);
+        qIdx++;
+        showQuizQ();
+    }, 800);
 }
-
-// ============ 统计 ============
-function updateStats() {
-    const total = vocabulary.length;
-    const learned = vocabulary.filter(v => learnedWords.has(v.id)).length;
-    const mistakes = vocabulary.filter(v => mistakeWords.has(v.id)).length;
-    const quizTotal = quizHistory.length;
-    const quizCorrect = quizHistory.reduce((sum, h) => sum + h.score, 0);
-    const quizQTotal = quizHistory.reduce((sum, h) => sum + h.total, 0);
-    const accuracy = quizQTotal > 0 ? Math.round((quizCorrect / quizQTotal) * 100) : 0;
-    
-    elements.statTotal.textContent = total;
-    elements.statLearned.textContent = learned;
-    elements.statMistakes.textContent = mistakes;
-    elements.statAccuracy.textContent = `${accuracy}%`;
-    
-    // 分类进度
-    const tech = vocabulary.filter(v => v.category === 'tech');
-    const ev = vocabulary.filter(v => v.category === 'ev');
-    const trade = vocabulary.filter(v => v.category === 'trade');
-    
-    const techLearned = tech.filter(v => learnedWords.has(v.id)).length;
-    const evLearned = ev.filter(v => learnedWords.has(v.id)).length;
-    const tradeLearned = trade.filter(v => learnedWords.has(v.id)).length;
-    
-    elements.catTech.textContent = `${techLearned} / ${tech.length}`;
-    elements.catTechFill.style.width = `${(techLearned / tech.length) * 100}%`;
-    
-    elements.catEv.textContent = `${evLearned} / ${ev.length}`;
-    elements.catEvFill.style.width = `${(evLearned / ev.length) * 100}%`;
-    
-    elements.catTrade.textContent = `${tradeLearned} / ${trade.length}`;
-    elements.catTradeFill.style.width = `${(tradeLearned / trade.length) * 100}%`;
-    
-    // 更新错题本
-    renderMistakes();
-}
-
-// ============ 页面切换 ============
-function showSection(name) {
-    elements.sections.forEach(s => s.classList.remove('active'));
-    document.getElementById(`${name}-section`).classList.add('active');
-    
-    if (name === 'stats') {
-        updateStats();
-    }
-}
-
-// 暴露全局函数
-window.removeMistake = removeMistake;
